@@ -1,0 +1,68 @@
+resources:
+  jobs:
+    urban_workflow_job:
+      name: urban-workflow-migration
+      description: >-
+        Manually triggered Madrid migration workflow. Stage every manifest-declared
+        source in the configured Unity Catalog volume before running. The first task
+        validates that collection checkpoint; the final task writes the analytical
+        review scorecard for human inspection.
+      max_concurrent_runs: 1
+      queue:
+        enabled: true
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+        - name: schema
+          default: ${var.schema}
+        - name: raw_volume
+          default: ${var.raw_volume}
+      tasks:
+        - task_key: validate_source_checkpoint
+          description: Validate all pre-staged source files, completeness, and provenance.
+          notebook_task:
+            notebook_path: ../notebooks/01_ingest_sources.ipynb
+          environment_key: default
+
+        - task_key: build_bronze
+          depends_on:
+            - task_key: validate_source_checkpoint
+          notebook_task:
+            notebook_path: ../notebooks/02_build_bronze.ipynb
+          environment_key: default
+
+        - task_key: build_silver
+          depends_on:
+            - task_key: build_bronze
+          notebook_task:
+            notebook_path: ../notebooks/03_build_silver.ipynb
+          environment_key: default
+
+        - task_key: build_gold_features
+          depends_on:
+            - task_key: build_silver
+          notebook_task:
+            notebook_path: ../notebooks/04_build_gold_features.ipynb
+          environment_key: default
+
+        - task_key: run_modeling
+          depends_on:
+            - task_key: build_gold_features
+          notebook_task:
+            notebook_path: ../notebooks/05_run_ml.ipynb
+          environment_key: default
+
+        - task_key: review_output_checkpoint
+          description: Write the 28-check scorecard and expose final analytical outputs.
+          depends_on:
+            - task_key: run_modeling
+          notebook_task:
+            notebook_path: ../notebooks/06_review_outputs.ipynb
+          environment_key: default
+
+      environments:
+        - environment_key: default
+          spec:
+            environment_version: "4"
+            dependencies:
+              - -r ${workspace.file_path}/requirements.txt

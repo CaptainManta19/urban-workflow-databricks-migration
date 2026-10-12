@@ -16,8 +16,12 @@ env/
 # Environment and local secrets
 .env
 .env.*
+.databrickscfg
 *.secrets
 *.key
+*.pem
+*.p12
+*.pfx
 
 # IDE / OS
 .DS_Store

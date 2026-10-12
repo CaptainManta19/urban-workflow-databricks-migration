@@ -1,0 +1,96 @@
+{
+  "sources": [
+    {
+      "source_id": "madrid_combined_grid_snapshot",
+      "source_name": "Madrid Combined 250m Grid Snapshot",
+      "acquisition_mode": "local_file",
+      "source_kind": "derived_snapshot",
+      "source_type": "geospatial",
+      "file_format": "geopackage",
+      "path": "madrid/madrid_grid_250m_lu_height_transport_rent_emvs_district.gpkg",
+      "description": "Derived 250m grid used to unblock the Databricks migration while its construction notebook is deferred for a later reconstruction track.",
+      "upstream_sources": [
+        "Copernicus Urban Atlas land use 2018",
+        "Copernicus Urban Atlas building height raster",
+        "OpenStreetMap public transport features",
+        "Madrid rent statistics",
+        "Madrid EMVS public housing",
+        "OpenStreetMap district boundaries"
+      ],
+      "transformation_reference": "Legacy notebooks/combined_dataset.ipynb; rework deferred until after the main migration milestones.",
+      "discovery_notes": [
+        "This is not an original raw source; it is an inspectable snapshot produced by the legacy layered-grid notebook.",
+        "Bronze must preserve the snapshot as received and retain its derived-source classification."
+      ]
+    },
+    {
+      "source_id": "madrid_emvs_housing",
+      "source_name": "Madrid EMVS Public Housing",
+      "acquisition_mode": "local_file",
+      "source_kind": "original_source",
+      "source_type": "tabular",
+      "file_format": "csv",
+      "path": "madrid/emvs_housing.csv",
+      "csv_options": {
+        "encoding": "utf-8-sig",
+        "delimiter": ";",
+        "header_row": 1
+      },
+      "description": "Public housing units allocated by district. The file must be uploaded to the raw_sources volume before collection.",
+      "discovery_notes": [
+        "The legacy source uses a semicolon delimiter and contains a descriptive first row before the header."
+      ]
+    },
+    {
+      "source_id": "madrid_population_district_barrio_api",
+      "source_name": "Madrid Population By District And Barrio API",
+      "acquisition_mode": "api",
+      "source_kind": "original_source",
+      "source_type": "tabular",
+      "file_format": "json",
+      "url": "https://datos.madrid.es/api/3/action/datastore_search",
+      "manual_upload_path": "madrid/madrid_population_district_barrio_api/run_id=legacy_snapshot/madrid_population_district_barrio_api.json",
+      "params": {
+        "resource_id": "300557-0-poblacion-distrito-barrio-csv"
+      },
+      "expected_file_name": "madrid_population_district_barrio_api.json",
+      "description": "Official annual population by district and barrio from the Madrid open data portal.",
+      "discovery_notes": [
+        "The CKAN result.total value will be used to verify that pagination collected every record."
+      ]
+    },
+    {
+      "source_id": "madrid_district_indicator_panel_api",
+      "source_name": "Madrid District Indicator Panel API",
+      "acquisition_mode": "api",
+      "source_kind": "original_source",
+      "source_type": "tabular",
+      "file_format": "json",
+      "url": "https://datos.madrid.es/api/3/action/datastore_search",
+      "manual_upload_path": "madrid/madrid_district_indicator_panel_api/run_id=legacy_snapshot/madrid_district_indicator_panel_api.json",
+      "params": {
+        "resource_id": "300087-0-indicadores-distritos-csv"
+      },
+      "expected_file_name": "madrid_district_indicator_panel_api.json",
+      "description": "Territorial indicator panel for Madrid districts and barrios.",
+      "discovery_notes": [
+        "The legacy snapshot contains 116,930 records, so collection must use verified CKAN pagination rather than a test-sized response."
+      ]
+    },
+    {
+      "source_id": "madrid_district_boundaries_remote",
+      "source_name": "Madrid District Boundaries",
+      "acquisition_mode": "remote_file",
+      "source_kind": "original_source",
+      "source_type": "geospatial",
+      "file_format": "json",
+      "url": "https://datos.madrid.es/dataset/900012-0-limites-administrativos-mapas/resource/900012-3-limites-administrativos-mapas/download/900012-3-limites-administrativos-mapas.json",
+      "manual_upload_path": "madrid/madrid_district_boundaries_remote/run_id=legacy_snapshot/madrid_district_boundaries.json",
+      "expected_file_name": "madrid_district_boundaries.json",
+      "description": "Official administrative boundary download used as the spatial reference for district-level integration.",
+      "discovery_notes": [
+        "The response is TopoJSON rather than ordinary GeoJSON and requires a dedicated normalization step after landing."
+      ]
+    }
+  ]
+}

@@ -3,7 +3,7 @@ import re
 from urban_workflow.ingestion.schemas import CompatibilityHints
 
 
-YEAR_PATTERN = re.compile(r"\b(?:19|20)\d{2}\b")
+YEAR_PATTERN = re.compile(r"(?<!\d)(?:19|20)\d{2}(?!\d)")
 JOIN_KEYWORDS = (
     "id",
     "code",
